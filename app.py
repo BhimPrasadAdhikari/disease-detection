@@ -61,7 +61,6 @@ def predict():
         return jsonify({"error": "No file uploaded"}), 400
 
     file = request.files["file"]
-
     if file.filename == "":
         return jsonify({"error": "Empty filename"}), 400
 
@@ -70,23 +69,35 @@ def predict():
     os.makedirs("uploads", exist_ok=True)
     file.save(file_path)
 
-    # Preprocess and predict
-    img_array = preprocess_image(file_path)
-    prediction = model.predict(img_array)
-    predicted_class = class_names[np.argmax(prediction)]
-    confidence = float(np.max(prediction) * 100)
+    try:
+        # Preprocess
+        img_array = preprocess_image(file_path)
 
-    # Clean up
-    os.remove(file_path)
+        # Call the SavedModel 'serve' endpoint
+        infer = model.signatures["serve"]
+        prediction = infer(tf.constant(img_array))  # returns dict
+        # The output tensor is the first (and only) value
+        prediction = list(prediction.values())[0].numpy()
 
-    return jsonify({
-        "prediction": predicted_class,
-        "confidence": f"{confidence:.2f}%",
-        "probabilities": {
-            class_names[i]: f"{prediction[0][i] * 100:.2f}%"
-            for i in range(len(class_names))
-        }
-    })
+        # Decode prediction
+        predicted_class = class_names[np.argmax(prediction)]
+        confidence = float(np.max(prediction) * 100)
+
+        return jsonify({
+            "prediction": predicted_class,
+            "confidence": f"{confidence:.2f}%",
+            "probabilities": {
+                class_names[i]: f"{prediction[0][i] * 100:.2f}%"
+                for i in range(len(class_names))
+            }
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
 
 if __name__ == "__main__":
