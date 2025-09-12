@@ -1,11 +1,11 @@
 steps:
   # Step 1: Build Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: [ 'build', '-t', 'gcr.io/bubbly-upgrade-441904-p6/plant-disease-api', '.' ]
+    args: ['build', '-t', 'gcr.io/bubbly-upgrade-441904-p6/plant-disease-api', '.']
 
-  # Step 2: Push Docker image to Container Registry
+  # Step 2: Push Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: [ 'push', 'gcr.io/bubbly-upgrade-441904-p6/plant-disease-api' ]
+    args: ['push', 'gcr.io/bubbly-upgrade-441904-p6/plant-disease-api']
 
   # Step 3: Deploy to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
@@ -16,7 +16,8 @@ steps:
         '--image', 'gcr.io/bubbly-upgrade-441904-p6/plant-disease-api',
         '--platform', 'managed',
         '--region', 'us-central1',
-        '--allow-unauthenticated'
+        '--allow-unauthenticated',
+        '--set-env-vars', 'BUCKET_NAME=disease_detection_bucket,MODEL_FILE=plant_disease_model.h5'
       ]
 
 images:

@@ -5,23 +5,30 @@ from flask import Flask, request, jsonify
 from tensorflow.keras.preprocessing import image
 from werkzeug.utils import secure_filename
 from google.cloud import storage
+import shutil
 
 app = Flask(__name__)
 
 # GCS bucket details (override via env vars if needed)
 BUCKET_NAME = os.getenv("BUCKET_NAME", "disease_detection_bucket")
-MODEL_FILE = os.getenv("MODEL_FILE", "plant_disease_model.h5")
-MODEL_PATH = f"/tmp/{MODEL_FILE}"  # Cloud Run allows writing to /tmp
+MODEL_DIR = os.getenv("MODEL_DIR", "plant_disease_model_saved")
+LOCAL_MODEL_DIR = "/tmp/plant_disease_model_saved"  # Cloud Run writable tmp
 
 
 def download_model():
-    """Download model from GCS if not already present locally"""
-    if not os.path.exists(MODEL_PATH):
-        print(f"📥 Downloading model from gs://{BUCKET_NAME}/{MODEL_FILE} ...")
+    """Download model directory from GCS if not already present"""
+    if not os.path.exists(LOCAL_MODEL_DIR):
+        print(f"📥 Downloading model from gs://{BUCKET_NAME}/{MODEL_DIR} ...")
         client = storage.Client()
         bucket = client.bucket(BUCKET_NAME)
-        blob = bucket.blob(MODEL_FILE)
-        blob.download_to_filename(MODEL_PATH)
+
+        # download all blobs with this prefix
+        blobs = bucket.list_blobs(prefix=MODEL_DIR)
+        for blob in blobs:
+            local_path = os.path.join("/tmp", blob.name)
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            blob.download_to_filename(local_path)
+
         print("✅ Model downloaded successfully.")
     else:
         print("⚡ Using cached model from /tmp")
@@ -29,7 +36,7 @@ def download_model():
 
 # Download and load model
 download_model()
-model = tf.keras.models.load_model(MODEL_PATH)
+model = tf.keras.models.load_model(LOCAL_MODEL_DIR)
 
 # Class names (must match training dataset)
 class_names = ['Healthy', 'Powdery', 'Rust']
