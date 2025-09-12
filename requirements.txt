@@ -5,3 +5,5 @@ Werkzeug
 gunicorn
 google-cloud-storage
 Pillow
+flask_cors
+
