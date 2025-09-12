@@ -1,37 +1,37 @@
 import os
 import numpy as np
 import tensorflow as tf
-import requests
 from flask import Flask, request, jsonify
 from tensorflow.keras.preprocessing import image
 from werkzeug.utils import secure_filename
+from google.cloud import storage
 
 app = Flask(__name__)
 
-# Public GCS URL (you can override via env var if needed)
-MODEL_URL = os.getenv(
-    "MODEL_URL",
-    "https://storage.googleapis.com/disease_detection_bucket/plant_disease_model.h5"
-)
-MODEL_PATH = "plant_disease_model.h5"
+# GCS bucket details (override via env vars if needed)
+BUCKET_NAME = os.getenv("BUCKET_NAME", "disease_detection_bucket")
+MODEL_FILE = os.getenv("MODEL_FILE", "plant_disease_model.h5")
+MODEL_PATH = f"/tmp/{MODEL_FILE}"  # Cloud Run allows writing to /tmp
 
 
 def download_model():
-    """Download the model from GCS if not already present"""
+    """Download model from GCS if not already present locally"""
     if not os.path.exists(MODEL_PATH):
-        print(f"📥 Downloading model from {MODEL_URL} ...")
-        response = requests.get(MODEL_URL)
-        response.raise_for_status()
-        with open(MODEL_PATH, "wb") as f:
-            f.write(response.content)
+        print(f"📥 Downloading model from gs://{BUCKET_NAME}/{MODEL_FILE} ...")
+        client = storage.Client()
+        bucket = client.bucket(BUCKET_NAME)
+        blob = bucket.blob(MODEL_FILE)
+        blob.download_to_filename(MODEL_PATH)
         print("✅ Model downloaded successfully.")
+    else:
+        print("⚡ Using cached model from /tmp")
 
 
 # Download and load model
 download_model()
 model = tf.keras.models.load_model(MODEL_PATH)
 
-# Class names (ensure they match your training dataset)
+# Class names (must match training dataset)
 class_names = ['Healthy', 'Powdery', 'Rust']
 
 
@@ -69,7 +69,7 @@ def predict():
     predicted_class = class_names[np.argmax(prediction)]
     confidence = float(np.max(prediction) * 100)
 
-    # Remove file after prediction (optional)
+    # Clean up
     os.remove(file_path)
 
     return jsonify({
@@ -83,4 +83,4 @@ def predict():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))

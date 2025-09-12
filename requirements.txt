@@ -2,5 +2,5 @@ flask
 tensorflow==2.13.0
 numpy<1.24
 Werkzeug
-requests
 gunicorn
+google-cloud-storage
