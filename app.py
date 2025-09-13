@@ -24,17 +24,21 @@ def download_model():
         client = storage.Client()
         bucket = client.bucket(BUCKET_NAME)
 
-        # download all blobs with this prefix
         blobs = bucket.list_blobs(prefix=MODEL_DIR)
         for blob in blobs:
+            # Skip "directory" blobs (names ending with "/")
+            if blob.name.endswith("/"):
+                continue
+
             local_path = os.path.join("/tmp", blob.name)
             os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
+            print(f"⬇️ Downloading {blob.name} -> {local_path}")
             blob.download_to_filename(local_path)
 
         print("✅ Model downloaded successfully.")
     else:
         print("⚡ Using cached model from /tmp")
-
 
 # Download and load model
 download_model()
