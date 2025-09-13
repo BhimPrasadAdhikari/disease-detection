@@ -12,8 +12,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# GCS bucket details (override via env vars if needed)
-BUCKET_NAME = os.getenv("BUCKET_NAME", "disease_detection_bucket")
+BUCKET_NAME = os.getenv("BUCKET_NAME", "disease_detection_bucket_1")
 MODEL_DIR = os.getenv("MODEL_DIR", "plant_disease_model_saved")
 LOCAL_MODEL_DIR = "/tmp/plant_disease_model_saved"  # Cloud Run writable tmp
 
