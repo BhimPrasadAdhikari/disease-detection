@@ -15,7 +15,7 @@ steps:
         '--platform', 'managed',
         '--region', 'us-central1',
         '--allow-unauthenticated',
-        '--set-env-vars', 'BUCKET_NAME=disease_detection_bucket,MODEL_FILE=plant_disease_model.h5'
+        '--set-env-vars', 'BUCKET_NAME=disease_detection_bucket_1,MODEL_FILE='
       ]
 
 images:
