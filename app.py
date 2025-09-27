@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import tensorflow as tf
+from keras.layers import TFSMLayer
 from flask import Flask, request, jsonify
 from tensorflow.keras.preprocessing import image
 from werkzeug.utils import secure_filename
@@ -55,7 +56,7 @@ def extract_model():
 # download_model()
 
 extract_model()
-model = tf.keras.models.load_model(LOCAL_MODEL_DIR)
+model = TFSMLayer(LOCAL_MODEL_DIR, call_endpoint="serving_default")
 
 # Class names (must match training dataset)
 class_names = ['Healthy', 'Powdery', 'Rust']
@@ -93,10 +94,11 @@ def predict():
         img_array = preprocess_image(file_path)
 
         # Call the SavedModel 'serve' endpoint
-        infer = model.signatures["serve"]
-        prediction = infer(tf.constant(img_array))  # returns dict
+        # infer = model.signatures["serve"]
+        # prediction = infer(tf.constant(img_array))  # returns dict
         # The output tensor is the first (and only) value
-        prediction = list(prediction.values())[0].numpy()
+        # prediction = model(img_array).numpy()
+        # prediction = list(prediction.values())[0].numpy()
 
         # Decode prediction
         predicted_class = class_names[np.argmax(prediction)]
