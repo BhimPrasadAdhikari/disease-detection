@@ -118,7 +118,7 @@ def predict():
         # infer = model.signatures["serve"]
         # prediction = infer(tf.constant(img_array))  # returns dict
         # The output tensor is the first (and only) value
-        # prediction = model(img_array).numpy()
+        prediction = model(img_array).numpy()
         # prediction = list(prediction.values())[0].numpy()
 
         # Decode prediction
