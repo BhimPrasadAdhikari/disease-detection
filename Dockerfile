@@ -13,7 +13,9 @@ COPY requirements.txt .
 
 # Upgrade pip and install deps
 RUN pip install --upgrade pip setuptools wheel
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --ignore-installed -r requirements.txt
+
+
 # Copy project files
 COPY . .
 
