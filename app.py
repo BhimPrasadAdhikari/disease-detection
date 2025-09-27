@@ -77,7 +77,14 @@ def extract_model():
 #         print("⚡ Using cached extracted model.")
 
 extract_model()
-model = TFSMLayer(LOCAL_MODEL_DIR, call_endpoint="serving_default")
+model = None
+
+def get_model():
+    global model
+    if model is None:
+        extract_model()
+        model = TFSMLayer(LOCAL_MODEL_DIR, call_endpoint="serving_default")
+    return model
 
 # Class names (must match training dataset)
 class_names = ['Healthy', 'Powdery', 'Rust']
@@ -115,6 +122,7 @@ def predict():
         img_array = preprocess_image(file_path)
 
         # Run inference
+        model = get_model()
         prediction = model(tf.constant(img_array))
         prediction = list(prediction.values())[0]
 
