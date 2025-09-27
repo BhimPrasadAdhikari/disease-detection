@@ -44,7 +44,7 @@ ZIP_MODEL_PATH = "plant_disease_model_saved.zip"
 # 
 def extract_model():
     
-    if not os.patj.exists(LOCAL_MODEL_DIR):
+    if not os.path.exists(LOCAL_MODEL_DIR):
         print("Extracting model")
         os.makedirs(LOCAL_MODEL_DIR, exist_ok=True)
         shutil.unpack_archive(ZIP_MODEL_PATH, LOCAL_MODEL_DIR)
