@@ -13,7 +13,7 @@ import zipfile
 
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://chatbot-frontend-fawn-ten.vercel.app"])
 
 # BUCKET_NAME = os.getenv("BUCKET_NAME", "disease_detection_bucket_1")
 # MODEL_DIR = os.getenv("MODEL_DIR", "plant_disease_model_saved")
