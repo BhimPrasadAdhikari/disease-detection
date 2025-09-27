@@ -114,12 +114,13 @@ def predict():
         # Preprocess
         img_array = preprocess_image(file_path)
 
-        # Call the SavedModel 'serve' endpoint
-        # infer = model.signatures["serve"]
-        # prediction = infer(tf.constant(img_array))  # returns dict
-        # The output tensor is the first (and only) value
-        prediction = model(img_array).numpy()
-        # prediction = list(prediction.values())[0].numpy()
+        # Run inference
+        prediction = model(tf.constant(img_array))
+        prediction = list(prediction.values())[0]
+
+        # Ensure numpy array
+        if hasattr(prediction, "numpy"):
+            prediction = prediction.numpy()
 
         # Decode prediction
         predicted_class = class_names[np.argmax(prediction)]
