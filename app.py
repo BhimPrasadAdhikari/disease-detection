@@ -4,44 +4,57 @@ import tensorflow as tf
 from flask import Flask, request, jsonify
 from tensorflow.keras.preprocessing import image
 from werkzeug.utils import secure_filename
-from google.cloud import storage
 import shutil
 from flask_cors import CORS
+import gdown
 
 
 app = Flask(__name__)
 CORS(app)
 
-BUCKET_NAME = os.getenv("BUCKET_NAME", "disease_detection_bucket_1")
-MODEL_DIR = os.getenv("MODEL_DIR", "plant_disease_model_saved")
+# BUCKET_NAME = os.getenv("BUCKET_NAME", "disease_detection_bucket_1")
+# MODEL_DIR = os.getenv("MODEL_DIR", "plant_disease_model_saved")
 LOCAL_MODEL_DIR = "/tmp/plant_disease_model_saved"  # Cloud Run writable tmp
+ZIP_MODEL_PATH = "plant_disease_model_saved.zip"
 
 
-def download_model():
-    """Download model directory from GCS if not already present"""
-    if not os.path.exists(LOCAL_MODEL_DIR):
-        print(f"📥 Downloading model from gs://{BUCKET_NAME}/{MODEL_DIR} ...")
-        client = storage.Client()
-        bucket = client.bucket(BUCKET_NAME)
+# def download_model():
+#     """Download model directory from GCS if not already present"""
+#     if not os.path.exists(LOCAL_MODEL_DIR):
+#         print(f"📥 Downloading model from gs://{BUCKET_NAME}/{MODEL_DIR} ...")
+#         client = storage.Client()
+#         bucket = client.bucket(BUCKET_NAME)
 
-        blobs = bucket.list_blobs(prefix=MODEL_DIR)
-        for blob in blobs:
-            # Skip "directory" blobs (names ending with "/")
-            if blob.name.endswith("/"):
-                continue
+#         blobs = bucket.list_blobs(prefix=MODEL_DIR)
+#         for blob in blobs:
+#             # Skip "directory" blobs (names ending with "/")
+#             if blob.name.endswith("/"):
+#                 continue
 
-            local_path = os.path.join("/tmp", blob.name)
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+#             local_path = os.path.join("/tmp", blob.name)
+#             os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
-            print(f"⬇️ Downloading {blob.name} -> {local_path}")
-            blob.download_to_filename(local_path)
+#             print(f"⬇️ Downloading {blob.name} -> {local_path}")
+#             blob.download_to_filename(local_path)
 
-        print("✅ Model downloaded successfully.")
+#         print("✅ Model downloaded successfully.")
+#     else:
+#         print("⚡ Using cached model from /tmp")
+
+# 
+def extract_model():
+    
+    if not os.patj.exists(LOCAL_MODEL_DIR):
+        print("Extracting model")
+        os.makedirs(LOCAL_MODEL_DIR, exist_ok=True)
+        shutil.unpack_archive(ZIP_MODEL_PATH, LOCAL_MODEL_DIR)
+        print("Model Extracted successfully")
     else:
-        print("⚡ Using cached model from /tmp")
-
+        print("Using cached model at /tmp")
 # Download and load model
-download_model()
+# download_model()
+
+extract_model()
 model = tf.keras.models.load_model(LOCAL_MODEL_DIR)
 
 # Class names (must match training dataset)
