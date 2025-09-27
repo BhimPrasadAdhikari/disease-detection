@@ -8,6 +8,8 @@ from werkzeug.utils import secure_filename
 import shutil
 from flask_cors import CORS
 import gdown
+import zipfile
+
 
 
 app = Flask(__name__)
@@ -54,6 +56,25 @@ def extract_model():
         print("Using cached model at /tmp")
 # Download and load model
 # download_model()
+
+# def extract_model():
+#     import zipfile, os, shutil
+
+#     if not os.path.exists(LOCAL_MODEL_DIR):
+#         print("📦 Extracting model from zip...")
+#         with zipfile.ZipFile("plant_disease_model_saved.zip", "r") as zip_ref:
+#             zip_ref.extractall("/tmp")
+
+#         # Detect nested folder
+#         nested_path = os.path.join(LOCAL_MODEL_DIR, "plant_disease_model_saved")
+#         if os.path.exists(nested_path):
+#             for item in os.listdir(nested_path):
+#                 shutil.move(os.path.join(nested_path, item), LOCAL_MODEL_DIR)
+#             shutil.rmtree(nested_path)
+
+#         print("✅ Model extracted and ready.")
+#     else:
+#         print("⚡ Using cached extracted model.")
 
 extract_model()
 model = TFSMLayer(LOCAL_MODEL_DIR, call_endpoint="serving_default")
